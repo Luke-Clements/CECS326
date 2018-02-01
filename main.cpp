@@ -26,7 +26,6 @@ int		getValidInput(const string PROMPT, int lowerValue, int upperValue);
 
 /*
  * TODO:
- * get/verify user integer input
  * list deallocated memory
  */
 
@@ -65,7 +64,7 @@ int main()
 			{
 				int arrayNumber = getValidInput("Which array would you like to access(1-20)? ", 1, 20) - 1;
 
-				if(data.charArray == NULL)
+				if(*data.charArray == NULL)
 				{
 					cout << "All data was erased, reinitializing all data...\n";
 
@@ -80,7 +79,6 @@ int main()
 					cout << "There is no data in the specified array, re-initializing...\n";
 					*(data.charArray + arrayNumber) = singleAllocateInitializeCharPointerMemory(*(data.charArray + arrayNumber), data.intArray[arrayNumber]);
 				}
-				cout << "arNum: " << arrayNumber << endl;
 				subMenuInput = getValidInput(SUB_MENU, 1, 3);
 				cout << subMenuInput << endl;
 
@@ -125,22 +123,29 @@ int	getValidInput(const string PROMPT, int lowerValue, int upperValue)
 	int input = -1;
 	do
 	{
-		try
+		cout << PROMPT;
+
+		if(!(cin >> input))
 		{
-			cout << PROMPT;
-			cin >> input;
-			cout << "got here\n";
-			cin.ignore(10000, '\n');
-			cout << "gothere2\n";
-			break;
+			cout << "Invalid input!\n";
+			cin.clear();
+			cin.ignore();
 		}
-		catch(exception &e)
+		else
 		{
-			cout << "Invalid input, please input a value between " << lowerValue << " and " << upperValue << endl;
-			cin.ignore(10000, '\n');
+			cout << input << endl;
+			if(input > upperValue || input < lowerValue)
+			{
+				cout << "Invalid input, please input a value between " << lowerValue << " and " << upperValue << endl;
+				cin.clear();
+				cin.ignore();
+			}
+			else
+			{
+				break;
+			}
 		}
 	} while(true);
-	cout << "gothere3: " << input << "\n";
 	return input;
 }
 
@@ -148,11 +153,12 @@ void deleteAllAllocations(char **charAr)
 {
 	for(int i = 0; i < 20; i++)
 	{
+		cout << i << endl;
 		delete[] *(charAr + i);
 		*(charAr + i) = NULL;
 	}
 	delete[] charAr;
-	charAr = NULL;
+	*charAr = NULL;
 }
 
 bool printFirstTenCharsInArray(char *charAr, int length)
