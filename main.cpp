@@ -5,30 +5,23 @@
  *      Author: luke
  */
 
-#include <iostream>
-#include <cstdlib>
-#include <array>
-#include <exception>
-using namespace std;
+#include "header.h"
+
 struct Data
 {
-	char** 	charArray;
+	char* 	charArray[20];
 	int  	intArray[20];
 };
 
-int 	initializeIntegerArray(int intAr[20], int finalLocation, int currentLocation, int value);
-char* 	singleAllocateInitializeCharPointerMemory(char *charAr, int arLength);
-char**	allocateInitializeCharPointerMemory(char *charAr[20], int intAr[20]);
-bool	printFirstTenCharsInArray(char *charAr, int length);
-void	deleteAllAllocations(char **charAr);
-int		getValidInput(const string PROMPT, int lowerValue, int upperValue);
-
-
 /*
- * TODO:
- * list deallocated memory
+ * CECS326: Program 1
+ * -------------------
+ * This program allocates an array of character pointers, which themselves
+ * 	are set to arrays of uppercase characters. The user is then allowed to
+ * 	print the first ten characters of each character array. The user can
+ * 	also choose to deallocate and reallocate memory, and of course can exit
+ * 	the program.
  */
-
 int main()
 {
 	const string MAIN_MENU = 	"1: Access a Pointer\n"
@@ -45,9 +38,11 @@ int main()
 	int subMenuInput;
 
 
-	initializeIntegerArray(data.intArray, 20, 0, 200);
+	//initializes the integer array based upon the recursive function
+	initializeIntegerArray(data.intArray, 20, 0, 2700);
 
-	data.charArray = new char * [20];
+	//initializes the char pointer pointer
+//	data.charArray = new char * [20];
 	for(int i = 0; i < 20; i++)
 	{
 		*(data.charArray + i) = singleAllocateInitializeCharPointerMemory(*(data.charArray + i), data.intArray[i]);
@@ -55,6 +50,7 @@ int main()
 
 	do
 	{
+		//gets valid input for the main menu from the user
 		mainMenuInput = getValidInput(MAIN_MENU, 1, 4);
 
 		switch(mainMenuInput)
@@ -62,32 +58,38 @@ int main()
 		case 1:
 			do
 			{
+				//gets the array Number that the user wants to deallocate/print the data in that array
 				int arrayNumber = getValidInput("Which array would you like to access(1-20)? ", 1, 20) - 1;
 
+				//ensures that the entire array is not null
 				if(*data.charArray == NULL)
 				{
 					cout << "All data was erased, reinitializing all data...\n";
 
-					data.charArray = new char * [20];
+					//initializes the char pointer pointer
+//					data.charArray = new char * [20];
 					for(int i = 0; i < 20; i++)
 					{
 						*(data.charArray + i) = singleAllocateInitializeCharPointerMemory(*(data.charArray + i), data.intArray[i]);
 					}
 				}
+				//checks to see if the specified array is NULL and reinitializes
 				else if(*(data.charArray + arrayNumber) == NULL)
 				{
 					cout << "There is no data in the specified array, re-initializing...\n";
 					*(data.charArray + arrayNumber) = singleAllocateInitializeCharPointerMemory(*(data.charArray + arrayNumber), data.intArray[arrayNumber]);
 				}
+				//gets valid sub menu input from users
 				subMenuInput = getValidInput(SUB_MENU, 1, 3);
-				cout << subMenuInput << endl;
 
 				switch(subMenuInput)
 				{
 				case 1:
+					//prints the first ten characters in the specified non-null array
 					printFirstTenCharsInArray(*(data.charArray + arrayNumber), 10);
 					break;
 				case 2:
+					//deletes the allocations in the specified array
 					cout << "Deleting all characters in array #" << (arrayNumber + 1) << endl;
 					delete[] *(data.charArray + arrayNumber);
 					*(data.charArray + arrayNumber) = NULL;
@@ -100,13 +102,20 @@ int main()
 			}while(subMenuInput != 3);
 			break;
 		case 2:
+			//displays which locations are allocated and which are not
+			printIndex(data.charArray, 20);
 			break;
 		case 3:
 			cout << "Deleting all characters from memory\n";
 
+			//deletes all allocations
 			deleteAllAllocations(data.charArray);
 			break;
 		case 4:
+			cout << "Deleting all characters from memory\n";
+
+			//deletes all allocations on program close
+			deleteAllAllocations(data.charArray);
 			cout << "Exiting Program.";
 			break;
 		default:
@@ -116,104 +125,4 @@ int main()
 	} while(mainMenuInput != 4);
 
 	return 0;
-}
-
-int	getValidInput(const string PROMPT, int lowerValue, int upperValue)
-{
-	int input = -1;
-	do
-	{
-		cout << PROMPT;
-
-		if(!(cin >> input))
-		{
-			cout << "Invalid input!\n";
-			cin.clear();
-			cin.ignore();
-		}
-		else
-		{
-			cout << input << endl;
-			if(input > upperValue || input < lowerValue)
-			{
-				cout << "Invalid input, please input a value between " << lowerValue << " and " << upperValue << endl;
-				cin.clear();
-				cin.ignore();
-			}
-			else
-			{
-				break;
-			}
-		}
-	} while(true);
-	return input;
-}
-
-void deleteAllAllocations(char **charAr)
-{
-	for(int i = 0; i < 20; i++)
-	{
-		cout << i << endl;
-		delete[] *(charAr + i);
-		*(charAr + i) = NULL;
-	}
-	delete[] charAr;
-	*charAr = NULL;
-}
-
-bool printFirstTenCharsInArray(char *charAr, int length)
-{
-	if(charAr == NULL)
-	{
-		cout << "charAr null\n";
-		return false;
-	}
-	else
-	{
-		cout << "Printing first ten characters: ";
-		for(int i = 0;i < 10;i++)
-		{
-			cout << *(charAr + i);
-		}
-		cout << endl;
-		return true;
-	}
-}
-
-char** allocateInitializeCharPointerMemory(char **charAr, int intAr[20])
-{
-	char ** charPtr = new char * [20];
-	for(int i = 0; i < 20; i++)
-	{
-		*(charPtr + i) = singleAllocateInitializeCharPointerMemory(*(charPtr + i), intAr[i]);
-	}
-	return charPtr;
-}
-
-char* singleAllocateInitializeCharPointerMemory(char *charPtr, int arLength)
-{
-	charPtr = new char [arLength];
-
-	for(int i = 0;i < arLength;i++)
-	{
-		*(charPtr + i) = char(65 + rand()%26);
-	}
-
-	cout << arLength << endl;
-	return charPtr;
-}
-
-int initializeIntegerArray(int intAr[20], int finalLocation, int currentLocation, int value)
-{
-	if(currentLocation == finalLocation) //exit case
-	{
-		return value * 2;
-	}
-	else
-	{
-		intAr[currentLocation] = value;
-		value*=2;
-		currentLocation++;
-		return initializeIntegerArray(intAr, finalLocation, currentLocation, value);
-	}
 }
