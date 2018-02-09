@@ -100,10 +100,24 @@ int main() {
 	msgsnd(qid, (struct msgbuf *)&msg, size, 0);
 	cout << getpid() << ": now exits" << endl;
 
+	/*
+	-112 (mtype) -> looking for an mtype that is <= |-112|, which means that the message with the 111 mtype will be gathered
+	if there are more than one with mtype <= |-112|, FIFO is in effect
+	see: man 2 msgrcv for a description of how negative mtypes work
+	
+	0 (mtype) -> looking for an mtype that has been in the queue for the longest (forces FIFO on the queue), which means that 113 will be gathered
+	
+	These two are essentially emptying the queue
+	*/
 	msgrcv (qid, (struct msgbuf *)&msg, size, -112, 0);
 	msgrcv (qid, (struct msgbuf *)&msg, size, 0, 0);
-	msgrcv (qid, (struct msgbuf *)&msg, size, 117, 0);
+	//exit protocall -> prevents the queue from being removed too early and having a race condition: removing queue too soon
+	msgrcv (qid, (struct msgbuf *)&msg, size, 117, 0); //we know this is the last message, therefore we are finished with A (A no longer needs the queue)
 
+	/*
+	IPC_RMID -> remove this id
+	NULL -> pointer we don't care to provide
+	*/
 	// now safe to delete message queue
 	msgctl (qid, IPC_RMID, NULL);
 
