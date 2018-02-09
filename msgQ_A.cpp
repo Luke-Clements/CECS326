@@ -10,7 +10,7 @@ Program A sends the first message and reads the reply. Program A
 also sends a "fake" message to the msgQ that will never be read
 by anyone.
 
-Both child processes use message type mtype = 113 and 114.
+Both child processes use message type mtype = 113 and 114. (these two numbers will not be used)
 
 */
 
@@ -30,8 +30,16 @@ int main() {
 	sleep(3); 	// BAD programming - unreliable and potential bug
 			// do NOT use
 
+	/*
+	0 -> assuming that the queue exists
+	ftok 	-> same identifier as the other program (these must match otherwise the queue will not be found)[passed parameters must be the same]
+		-> these programs must be in the same directory
+	*/
 	int qid = msgget(ftok(".",'u'), 0);
 
+	/*
+	must be the same as other programs because the message objects in the queue are byte aligned
+	*/
 	// declare my message buffer
 	struct buf {
 		long mtype; // required
@@ -43,6 +51,9 @@ int main() {
 	// sending garbage
 	msg.mtype = 111;
 	strcpy(msg.greeting, "Fake message");
+	/*
+	0 -> halt if queue is too full to receive and store another message (this should never happen in this assignment)
+	*/
 	msgsnd(qid, (struct msgbuf *)&msg, size, 0);
 
 	strcpy(msg.greeting, "Another fake");
@@ -51,6 +62,9 @@ int main() {
 
 	// prepare my message to send
 	strcpy(msg.greeting, "Hello there");	
+	/*
+	getpid() -> gets an identifier for this program, not too useful here, but will be useful in later assignments
+	*/
 	cout << getpid() << ": sends greeting" << endl;
 	msg.mtype = 117; 	// set message type mtype = 117
 	msgsnd(qid, (struct msgbuf *)&msg, size, 0); // sending
@@ -61,7 +75,7 @@ int main() {
 	cout << getpid() << ": now exits" << endl;
 
 	msg.mtype = 117;
-	msgsnd (qid, (struct msgbuf *)&msg, size, 0);
+	msgsnd (qid, (struct msgbuf *)&msg, size, 0); //exit protocall
 
 	exit(0);
 }
